@@ -11,7 +11,7 @@ def usage():
     print("%s [-i <file>|-r] [-h manhattan|euclidian|hamming|manhattan+] [-g|-u]" % sys.argv[0])
 
 def read_file(file):
-    return 0, 0   
+    return 0, 0
 
 def get_args():
     try:
@@ -53,4 +53,3 @@ def get_args():
 
 if __name__ == '__main__':
     puzzle, puzzle_size, heuristic, search = get_args()
-    
