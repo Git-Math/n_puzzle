@@ -1,7 +1,9 @@
 import sys
 import getopt
+import copy
 
 import error
+import puzzle_generator
 
 NORMAL_SEARCH = 0
 GREEDY_SEARCH = 1
@@ -12,10 +14,61 @@ def usage():
 --help: display this help\n\
 -p <puzzle_file>: read puzzle from <puzzle_file>\n\
 -r <size>: generate random puzzle of size <size> (default with size 3)\n\
--i <iterations>: iterations for random puzzle (default 10000)\n\
+-i <iterations>: number of shuffle iterations for random puzzle (default 10000)\n\
 -h <heuristic>: heuristic function (default manhattan)\n\
 -g: greedy search\n\
 -u: uniform cost search" % sys.argv[0])
+
+def print_puzzle(puzzle, puzzle_size):
+    max_str_length = len(str(puzzle_size ** 2 - 1))
+    for row in puzzle:
+        for i, e in enumerate(row):
+            print(str(e).rjust(max_str_length), end = "")
+            if i < puzzle_size - 1:
+                print(" ", end = "")
+        print("")
+
+def solved_puzzle(puzzle_size):
+    puzzle = [[0 for i in range(puzzle_size)] for i in range(puzzle_size)]
+    x = 0
+    y = 0
+    i_x = 1
+    i_y = 0
+    for i in range(1, puzzle_size ** 2):
+        puzzle[y][x] = i
+        if x + i_x < 0 or x + i_x >= puzzle_size or (i_x != 0 and puzzle[y][x + i_x] != 0):
+            i_y = i_x
+            i_x = 0
+        elif y + i_y < 0 or y + i_y >= puzzle_size or (i_y != 0 and puzzle[y + i_y][x] != 0):
+            i_x = -i_y
+            i_y = 0
+        x += i_x
+        y += i_y
+    return puzzle
+
+def find_square(puzzle, square):
+    for y, row in enumerate(puzzle):
+        for x, s in enumerate(row):
+            if s == square:
+                return x, y
+    error.error("Invalid puzzle")
+
+def find_empty_square(puzzle):
+    return find_square(puzzle, 0)
+
+def is_solvable(puzzle, puzzle_size, solved_puzzle):
+    transpositions = 0
+    empty_transpositions = 0
+    x_empty, y_empty = find_empty_square(puzzle)
+    x_empty_solved, y_empty_solved = find_empty_square(solved_puzzle)
+    empty_transpositions = abs(x_empty - x_empty_solved) + abs(y_empty + y_empty_solved)
+    for y in range(puzzle_size):
+        for x in range(puzzle_size):
+            if puzzle[y][x] != solved_puzzle[y][x]:
+                x_solved, y_solved = find_square(puzzle, solved_puzzle[y][x])
+                puzzle[y][x], puzzle[y_solved][x_solved] = puzzle[y_solved][x_solved], puzzle[y][x]
+                transpositions += 1
+    return transpositions % 2 == empty_transpositions % 2
 
 def read_file(file):
     return 0, 0
@@ -54,10 +107,10 @@ def get_args():
         elif opt == "-i":
             try:
                 iterations = int(arg)
-                if iterations < 0 or iterations > 1000000:
+                if iterations < 0 or iterations > 100000:
                     raise
             except:
-                print("-i <iterations> must be a number between 0 and 1 000 000", file=sys.stderr)
+                print("-i <iterations> must be a number between 0 and 100 000", file=sys.stderr)
                 usage()
                 sys.exit(1)
         elif opt == "-h":
@@ -72,7 +125,14 @@ def get_args():
         else:
             usage()
             sys.exit(1)
+    if puzzle == None:
+        puzzle = puzzle_generator.generate_puzzle(puzzle_size, True, iterations)
     return puzzle, puzzle_size, heuristic, search, iterations
 
 if __name__ == '__main__':
     puzzle, puzzle_size, heuristic, search, iterations = get_args()
+    solved_puzzle = solved_puzzle(puzzle_size)
+    if not is_solvable(copy.deepcopy(puzzle), puzzle_size, solved_puzzle):
+        print("Unsolvable puzzle")
+        exit()
+    print_puzzle(puzzle, puzzle_size)
