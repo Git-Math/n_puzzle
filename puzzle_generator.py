@@ -11,7 +11,7 @@ def usage():
 -s: generate a solvable puzzle (default)\n\
 -u: generate an unsolvable puzzle\n\
 <size>: size of the puzzle" % sys.argv[0])
-        
+
 def shuffle_puzzle(puzzle, puzzle_size, iterations):
     for i in range(iterations):
         possible_move = []
@@ -37,7 +37,7 @@ def generate_puzzle(puzzle_size, is_solvable, iterations):
             puzzle[1][0], puzzle[1][1] = puzzle[1][1], puzzle[1][0]
         else:
             puzzle[0][0], puzzle[0][1] = puzzle[0][1], puzzle[0][0]
-    return puzzle 
+    return puzzle
 
 def print_generated_puzzle(puzzle, puzzle_size, is_solvable, iterations):
     max_str_length = len(str(puzzle_size ** 2 - 1))
