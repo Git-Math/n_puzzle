@@ -18,7 +18,9 @@ def usage():
 -i <iterations>: number of shuffle iterations for random puzzle (default 10000)\n\
 -h <heuristic>: heuristic function (default manhattan)\n\
 -g: greedy search\n\
--u: uniform cost search" % sys.argv[0])
+-u: uniform cost search\n\
+-c: classic mode\n\
+-m: mute" % sys.argv[0])
 
 def print_puzzle(puzzle, puzzle_size):
     max_str_length = len(str(puzzle_size ** 2 - 1))
@@ -45,6 +47,14 @@ def solved_puzzle(puzzle_size):
             i_y = 0
         x += i_x
         y += i_y
+    return puzzle
+
+def classic_solved_puzzle(puzzle_size):
+    puzzle = [[0 for i in range(puzzle_size)] for i in range(puzzle_size)]
+    for y in range(puzzle_size):
+        for x in range(puzzle_size):
+            puzzle[y][x] = x + y * puzzle_size + 1
+    puzzle[puzzle_size - 1][puzzle_size - 1] = 0
     return puzzle
 
 def find_square(puzzle, square):
@@ -106,7 +116,7 @@ def read_puzzle_file(puzzle_filename):
 
 def get_args():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "p:r:i:h:gu", ["help"])
+        opts, args = getopt.getopt(sys.argv[1:], "p:r:i:h:gucm", ["help"])
     except getopt.GetoptError as err:
         print(str(err), file=sys.stderr)
         usage()
@@ -120,6 +130,8 @@ def get_args():
     heuristic = "manhattan"
     search = NORMAL_SEARCH
     iterations = 10000
+    classic = False
+    mute = False
     for opt, arg in opts:
         if opt == "--help":
             usage()
@@ -161,19 +173,24 @@ def get_args():
             search = GREEDY_SEARCH
         elif opt == "-u":
             search = UNIFORM_COST_SEARCH
+        elif opt == "-c":
+            classic = True
+        elif opt == "-m":
+            mute = True
         else:
             usage()
             sys.exit(1)
     if puzzle == None:
         if puzzle_size == 0:
             puzzle_size = 3
-        puzzle = puzzle_generator.generate_puzzle(puzzle_size, True, iterations)
-    return puzzle, puzzle_size, heuristic, search, iterations
+        puzzle = puzzle_generator.generate_puzzle(puzzle_size, iterations, True, classic)
+    return puzzle, puzzle_size, heuristic, search, iterations, classic, mute
 
 if __name__ == '__main__':
-    puzzle, puzzle_size, heuristic, search, iterations = get_args()
-    solved_puzzle = solved_puzzle(puzzle_size)
+    puzzle, puzzle_size, heuristic, search, iterations, classic, mute = get_args()
+    solved_puzzle = solved_puzzle(puzzle_size) if not classic else classic_solved_puzzle(puzzle_size)
     if not is_solvable(copy.deepcopy(puzzle), puzzle_size, solved_puzzle):
         print("Unsolvable puzzle")
         exit()
     print_puzzle(puzzle, puzzle_size)
+    print_puzzle(solved_puzzle, puzzle_size)

@@ -10,6 +10,7 @@ def usage():
 -i <iterations>: number of shuffle iterations (default 10000)\n\
 -s: generate a solvable puzzle (default)\n\
 -u: generate an unsolvable puzzle\n\
+-c: generate a classic puzzle\n\
 <size>: size of the puzzle" % sys.argv[0])
 
 def shuffle_puzzle(puzzle, puzzle_size, iterations):
@@ -29,19 +30,19 @@ def shuffle_puzzle(puzzle, puzzle_size, iterations):
         puzzle[y][x] = 0
     return puzzle
 
-def generate_puzzle(puzzle_size, is_solvable, iterations):
-    puzzle = n_puzzle.solved_puzzle(puzzle_size)
+def generate_puzzle(puzzle_size, iterations, solvable, classic):
+    puzzle = n_puzzle.solved_puzzle(puzzle_size) if not classic else n_puzzle.classic_solved_puzzle(puzzle_size)
     puzzle = shuffle_puzzle(puzzle, puzzle_size, iterations)
-    if not is_solvable:
+    if not solvable:
         if puzzle[0][0] == 0 or puzzle[0][1] == 0:
             puzzle[1][0], puzzle[1][1] = puzzle[1][1], puzzle[1][0]
         else:
             puzzle[0][0], puzzle[0][1] = puzzle[0][1], puzzle[0][0]
     return puzzle
 
-def print_generated_puzzle(puzzle, puzzle_size, is_solvable, iterations):
+def print_generated_puzzle(puzzle, puzzle_size, iterations, solvable, classic):
     max_str_length = len(str(puzzle_size ** 2 - 1))
-    print("# Randomly generated %s puzzle shuffled with %d iterations" % ("solvable" if is_solvable else "unsolvable", iterations))
+    print("# Randomly generated %s %spuzzle shuffled with %d iterations" % ("solvable" if solvable else "unsolvable", "" if not classic else "classic ", iterations))
     print(puzzle_size)
     for row in puzzle:
         for i, e in enumerate(row):
@@ -52,7 +53,7 @@ def print_generated_puzzle(puzzle, puzzle_size, is_solvable, iterations):
 
 def get_args():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "sui:", ["help"])
+        opts, args = getopt.getopt(sys.argv[1:], "i:suc", ["help"])
     except getopt.GetoptError as err:
         print(str(err), file=sys.stderr)
         usage()
@@ -69,8 +70,9 @@ def get_args():
         print("<size> must be a number between 2 and 99", file=sys.stderr)
         usage()
         sys.exit(1)
-    is_solvable = True
     iterations = 10000
+    solvable = True
+    classic = False
     for opt, arg in opts:
         if opt == "--help":
             usage()
@@ -85,15 +87,17 @@ def get_args():
                 usage()
                 sys.exit(1)
         elif opt == "-s":
-            is_solvable = True
+            solvable = True
         elif opt == "-u":
-            is_solvable = False
+            solvable = False
+        elif opt == "-c":
+            classic = True
         else:
             usage()
             sys.exit(1)
-    return puzzle_size, is_solvable, iterations
+    return puzzle_size, iterations, solvable, classic
 
 if __name__ == '__main__':
-    puzzle_size, is_solvable, iterations = get_args()
-    puzzle = generate_puzzle(puzzle_size, is_solvable, iterations)
-    print_generated_puzzle(puzzle, puzzle_size, is_solvable, iterations)
+    puzzle_size, iterations, solvable, classic = get_args()
+    puzzle = generate_puzzle(puzzle_size, iterations, solvable, classic)
+    print_generated_puzzle(puzzle, puzzle_size, iterations, solvable, classic)
