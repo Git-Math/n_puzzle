@@ -42,6 +42,7 @@ def generate_puzzle(puzzle_size, is_solvable, iterations):
 def print_generated_puzzle(puzzle, puzzle_size, is_solvable, iterations):
     max_str_length = len(str(puzzle_size ** 2 - 1))
     print("# Randomly generated %s puzzle shuffled with %d iterations" % ("solvable" if is_solvable else "unsolvable", iterations))
+    print(puzzle_size)
     for row in puzzle:
         for i, e in enumerate(row):
             print(str(e).rjust(max_str_length), end = "")
@@ -57,7 +58,7 @@ def get_args():
         usage()
         sys.exit(1)
     if len(args) != 1:
-        print("invalid argument number")
+        print("Invalid argument number")
         usage()
         sys.exit(1)
     try:

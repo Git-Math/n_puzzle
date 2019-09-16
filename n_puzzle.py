@@ -1,4 +1,5 @@
 import sys
+import os
 import getopt
 import copy
 
@@ -70,8 +71,38 @@ def is_solvable(puzzle, puzzle_size, solved_puzzle):
                 transpositions += 1
     return transpositions % 2 == empty_transpositions % 2
 
-def read_file(file):
-    return 0, 0
+def read_puzzle_file(puzzle_filename):
+    if not os.path.isfile(puzzle_filename):
+        error.error('no such file: %s' % puzzle_filename)
+    puzzle = []
+    puzzle_size = 0
+    try:
+        puzzle_file = open(puzzle_filename, "r")
+    except:
+        error.error("Open puzzle file failed")
+    for line in puzzle_file:
+        if line[0] == "#":
+            continue
+        line = line.split("#")[0]
+        if puzzle_size == 0:
+            try:
+                puzzle_size = int(line)
+            except:
+                puzzle_file.close()
+                error.error("Puzzle file: puzzle size must be a number between 2 and 99")
+        else:
+            try:
+                puzzle.append([int(x) for x in line.split()])
+            except:
+                puzzle_file.close()
+                error.error("Puzzle file: invalid line value")
+            if len(puzzle[-1]) != puzzle_size:
+                puzzle_file.close()
+                error.error("Puzzle file: invalid line size")
+    puzzle_file.close()
+    if len(puzzle) != puzzle_size:
+        error.error("Puzzle file: invalid line number")
+    return puzzle, puzzle_size
 
 def get_args():
     try:
@@ -81,11 +112,11 @@ def get_args():
         usage()
         sys.exit(1)
     if args != []:
-        print("invalid argument: \"" + str(args[0]) + "\"", file=sys.stderr)
+        print("Invalid argument: \"" + str(args[0]) + "\"", file=sys.stderr)
         usage()
         sys.exit(1)
     puzzle = None
-    puzzle_size = 3
+    puzzle_size = 0
     heuristic = "manhattan"
     search = NORMAL_SEARCH
     iterations = 10000
@@ -94,8 +125,16 @@ def get_args():
             usage()
             sys.exit()
         elif opt == "-p":
-            puzzle, puzzle_size = read_file(arg)
+            if puzzle_size != 0:
+                print("There can only be one option -p OR one option -r", file=sys.stderr)
+                usage()
+                sys.exit(1)
+            puzzle, puzzle_size = read_puzzle_file(arg)
         elif opt == "-r":
+            if puzzle_size != 0:
+                print("There can only be one option -p OR one option -r", file=sys.stderr)
+                usage()
+                sys.exit(1)
             try:
                 puzzle_size = int(arg)
                 if puzzle_size < 2 or puzzle_size > 99:
@@ -126,6 +165,8 @@ def get_args():
             usage()
             sys.exit(1)
     if puzzle == None:
+        if puzzle_size == 0:
+            puzzle_size = 3
         puzzle = puzzle_generator.generate_puzzle(puzzle_size, True, iterations)
     return puzzle, puzzle_size, heuristic, search, iterations
 
