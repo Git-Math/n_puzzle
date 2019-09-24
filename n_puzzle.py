@@ -11,7 +11,7 @@ GREEDY_SEARCH = 1
 UNIFORM_COST_SEARCH = 2
 
 def usage():
-    print("usage: %s [--help] [-p <puzzle_file>|-r <size>] [-i iterations] [-h manhattan|euclidian|hamming|manhattan+] [-g|-u]\n\
+    print("usage: %s [--help] [-p <puzzle_file>|-r <size>] [-i iterations] [-h manhattan|euclidian|hamming|boost] [-g|-u] [-c] [-m]\n\
 --help: display this help\n\
 -p <puzzle_file>: read puzzle from <puzzle_file>\n\
 -r <size>: generate random puzzle of size <size> (default with size 3)\n\
@@ -57,6 +57,13 @@ def classic_solved_puzzle(puzzle_size):
     puzzle[puzzle_size - 1][puzzle_size - 1] = 0
     return puzzle
 
+def solved_puzzle_dict(solved_puzzle, puzzle_size):
+    solved_puzzle_dict = {}
+    for y in range(puzzle_size):
+        for x in range(puzzle_size):
+            solved_puzzle_dict[solved_puzzle[y][x]] = (x, y)
+    return solved_puzzle_dict
+
 def find_square(puzzle, square):
     for y, row in enumerate(puzzle):
         for x, s in enumerate(row):
@@ -67,11 +74,11 @@ def find_square(puzzle, square):
 def find_empty_square(puzzle):
     return find_square(puzzle, 0)
 
-def is_solvable(puzzle, puzzle_size, solved_puzzle):
+def is_solvable(puzzle, puzzle_size, solved_puzzle, solved_puzzle_dict):
     transpositions = 0
     empty_transpositions = 0
     x_empty, y_empty = find_empty_square(puzzle)
-    x_empty_solved, y_empty_solved = find_empty_square(solved_puzzle)
+    x_empty_solved, y_empty_solved = solved_puzzle_dict[0]
     empty_transpositions = abs(x_empty - x_empty_solved) + abs(y_empty + y_empty_solved)
     for y in range(puzzle_size):
         for x in range(puzzle_size):
@@ -166,7 +173,7 @@ def get_args():
                 sys.exit(1)
         elif opt == "-h":
             heuristic = arg
-            if heuristic != "manhattan" and heuristic != "euclidian" and heuristic != "hamming" and heuristic != "manhattan+":
+            if heuristic != "manhattan" and heuristic != "euclidian" and heuristic != "hamming" and heuristic != "boost":
                 usage()
                 sys.exit(1)
         elif opt == "-g":
@@ -189,8 +196,10 @@ def get_args():
 if __name__ == '__main__':
     puzzle, puzzle_size, heuristic, search, iterations, classic, mute = get_args()
     solved_puzzle = solved_puzzle(puzzle_size) if not classic else classic_solved_puzzle(puzzle_size)
-    if not is_solvable(copy.deepcopy(puzzle), puzzle_size, solved_puzzle):
+    solved_puzzle_dict = solved_puzzle_dict(solved_puzzle, puzzle_size)
+    if not is_solvable(copy.deepcopy(puzzle), puzzle_size, solved_puzzle, solved_puzzle_dict):
         print("Unsolvable puzzle")
         exit()
     print_puzzle(puzzle, puzzle_size)
     print_puzzle(solved_puzzle, puzzle_size)
+    print(solved_puzzle_dict)

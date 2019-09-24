@@ -5,7 +5,7 @@ import random
 import n_puzzle
 
 def usage():
-    print("usage: %s [--help] [-i <iterations>] [-s|-u] <size>\n\
+    print("usage: %s [--help] [-i <iterations>] [-s|-u] [-c] <size>\n\
 --help: display this help\n\
 -i <iterations>: number of shuffle iterations (default 10000)\n\
 -s: generate a solvable puzzle (default)\n\
