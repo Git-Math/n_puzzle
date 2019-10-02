@@ -34,7 +34,7 @@ def manhattan_update(puzzle, solved_puzzle, solved_puzzle_dict, prev_h, prev_dir
     x, y = n_puzzle.find_empty_square(puzzle)
     prev_x, prev_y = heuristic_prev_empty(x, y, prev_direction)
     x_solved, y_solved = solved_puzzle_dict[puzzle[prev_y][prev_x]]
-    return prev_h + abs(prev_x - x_solved) + abs(prev_y - y_solved) - (abs(x - x_solved) + abs(y - y_solved))
+    return prev_h + (abs(prev_x - x_solved) + abs(prev_y - y_solved)) - (abs(x - x_solved) + abs(y - y_solved))
 
 def euclidian(puzzle, puzzle_size, solved_puzzle, solved_puzzle_dict):
     h = 0
@@ -49,7 +49,7 @@ def euclidian_update(puzzle, solved_puzzle, solved_puzzle_dict, prev_h, prev_dir
     x, y = n_puzzle.find_empty_square(puzzle)
     prev_x, prev_y = heuristic_prev_empty(x, y, prev_direction)
     x_solved, y_solved = solved_puzzle_dict[puzzle[prev_y][prev_x]]
-    return prev_h + math.sqrt((prev_x - x_solved) ** 2 + (prev_y - y_solved) ** 2) - (math.sqrt((x - x_solved) ** 2 + (y - y_solved) ** 2))
+    return prev_h + (math.sqrt((prev_x - x_solved) ** 2 + (prev_y - y_solved) ** 2)) - (math.sqrt((x - x_solved) ** 2 + (y - y_solved) ** 2))
 
 def hamming(puzzle, puzzle_size, solved_puzzle, solved_puzzle_dict):
     h = 0
@@ -74,8 +74,15 @@ def boost(puzzle, puzzle_size, solved_puzzle, solved_puzzle_dict):
                 x_solved, y_solved = solved_puzzle_dict[puzzle[y][x]]
                 h_curr = abs(x - x_solved) + abs(y - y_solved)
                 if h_curr > 0:
-                    h += h_curr + linear_conflict(puzzle, puzzle_size, x, y, solved_puzzle, solved_puzzle_dict)
+                    h += h_curr + linear_conflict_forward(puzzle, x, y, solved_puzzle, solved_puzzle_dict)
     return h
+
+def boost_update(puzzle, solved_puzzle, solved_puzzle_dict, prev_h, prev_direction):
+    x, y = n_puzzle.find_empty_square(puzzle)
+    prev_x, prev_y = heuristic_prev_empty(x, y, prev_direction)
+    x_solved, y_solved = solved_puzzle_dict[puzzle[prev_y][prev_x]]
+    square = puzzle[prev_y][prev_x]
+    return prev_h + (abs(prev_x - x_solved) + abs(prev_y - y_solved) + linear_conflict(puzzle, prev_x, prev_y, x_solved, y_solved, square, solved_puzzle)) - (abs(x - x_solved) + abs(y - y_solved) + linear_conflict(puzzle, x, y, x_solved, y_solved, square, solved_puzzle))
 
 def set_h(heuristic):
     if heuristic == "manhattan":
@@ -85,11 +92,16 @@ def set_h(heuristic):
     elif heuristic == "hamming":
         return hamming, hamming_update
     else:
-        return boost, manhattan_update
+        return boost, boost_update
 
-def linear_conflict(puzzle, puzzle_size, x, y, solved_puzzle, solved_puzzle_dict):
+def linear_conflict(puzzle, x, y, x_solved, y_solved, square, solved_puzzle):
+    if solved_puzzle[y][x] != 0 and puzzle[y_solved][x_solved] == solved_puzzle[y][x] and ((x == x_solved and y_solved != y) or (y == y_solved and x_solved != x)):
+        return 2
+    return 0
+
+def linear_conflict_forward(puzzle, x, y, solved_puzzle, solved_puzzle_dict):
     x_solved, y_solved = solved_puzzle_dict[puzzle[y][x]]
-    if puzzle[y_solved][x_solved] == solved_puzzle[y][x] and ((x == x_solved and y_solved > y) or (y == y_solved and x_solved > x)):
+    if solved_puzzle[y][x] != 0 and puzzle[y_solved][x_solved] == solved_puzzle[y][x] and ((x == x_solved and y_solved > y) or (y == y_solved and x_solved > x)):
         return 2
     return 0
 
@@ -149,7 +161,6 @@ def solve_puzzle(puzzle, puzzle_size, solved_puzzle, solved_puzzle_dict, heurist
         current_f, current_state = opened_set_queue.get()
         current_state_json = json.dumps(current_state)
         if current_state == solved_puzzle:
-            print(h[current_state_json])
             return prev_state, selected_states, maximum_states
         if current_state_json in closed_set:
             continue

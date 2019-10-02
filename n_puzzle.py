@@ -196,15 +196,17 @@ def get_args():
         puzzle = puzzle_generator.generate_puzzle(puzzle_size, iterations, True, classic)
     return puzzle, puzzle_size, heuristic, search, iterations, classic, mute
 
-def print_solution(state, prev_state, puzzle_size):
+def print_solution(state, prev_state, puzzle_size, mute):
     state_json = json.dumps(state)
     if prev_state[state_json]:
-        move_number = print_solution(prev_state[state_json], prev_state, puzzle_size)
+        move_number = print_solution(prev_state[state_json], prev_state, puzzle_size, mute)
+        if not mute:
+            print_puzzle(state, puzzle_size)
+            print()
+        return move_number + 1
+    if not mute:
         print_puzzle(state, puzzle_size)
         print()
-        return move_number + 1
-    print_puzzle(state, puzzle_size)
-    print()
     return 0
 
 if __name__ == '__main__':
@@ -219,7 +221,7 @@ if __name__ == '__main__':
     #print_puzzle(solved_puzzle, puzzle_size)
     prev_state, selected_states, maximum_states = solve.solve_puzzle(puzzle, puzzle_size, solved_puzzle, solved_puzzle_dict, heuristic, search)
     end_time = time.time()
-    move_number = print_solution(solved_puzzle, prev_state, puzzle_size)
+    move_number = print_solution(solved_puzzle, prev_state, puzzle_size, mute)
     print("Total number of states ever selected in the opened set: %d" % selected_states)
     print("Maximum number of states ever represented in memory at the same time: %d" % maximum_states)
     print("Number of moves required to transition from the initial state to the final state: %d" % move_number)
