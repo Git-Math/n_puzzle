@@ -148,7 +148,7 @@ def solve_puzzle(puzzle, puzzle_size, solved_puzzle, solved_puzzle_dict, heurist
     h = {}
     start_json = json.dumps(puzzle)
     g[start_json] = 0
-    h[start_json] = h_func(puzzle, puzzle_size, solved_puzzle, solved_puzzle_dict)
+    h[start_json] = (h_func(puzzle, puzzle_size, solved_puzzle, solved_puzzle_dict) if search != n_puzzle.UNIFORM_COST_SEARCH else 0)
     opened_set_queue.put((g[start_json] + h[start_json], puzzle))
     opened_set.add(start_json)
     opened_set_len = 1
@@ -172,8 +172,8 @@ def solve_puzzle(puzzle, puzzle_size, solved_puzzle, solved_puzzle_dict, heurist
         for state, direction in expand(current_state, puzzle_size, prev_direction[current_state_json]):
             state_json = json.dumps(state)
             if not state_json in opened_set and not state_json in closed_set:
-                g[state_json] = g[current_state_json] + 1
-                h[state_json] = h_update_func(state, solved_puzzle, solved_puzzle_dict, h[current_state_json], direction)
+                g[state_json] = g[current_state_json] + (1 if search != n_puzzle.GREEDY_SEARCH else 0)
+                h[state_json] = (h_update_func(state, solved_puzzle, solved_puzzle_dict, h[current_state_json], direction) if search != n_puzzle.UNIFORM_COST_SEARCH else 0)
                 opened_set_queue.put((g[state_json] + h[state_json], state))
                 opened_set.add(state_json)
                 opened_set_len += 1

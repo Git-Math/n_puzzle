@@ -217,8 +217,6 @@ if __name__ == '__main__':
     if not is_solvable(copy.deepcopy(puzzle), puzzle_size, solved_puzzle, solved_puzzle_dict):
         print("Unsolvable puzzle")
         exit()
-    #print_puzzle(puzzle, puzzle_size)
-    #print_puzzle(solved_puzzle, puzzle_size)
     prev_state, selected_states, maximum_states = solve.solve_puzzle(puzzle, puzzle_size, solved_puzzle, solved_puzzle_dict, heuristic, search)
     end_time = time.time()
     move_number = print_solution(solved_puzzle, prev_state, puzzle_size, mute)
