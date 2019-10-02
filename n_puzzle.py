@@ -217,7 +217,10 @@ if __name__ == '__main__':
     if not is_solvable(copy.deepcopy(puzzle), puzzle_size, solved_puzzle, solved_puzzle_dict):
         print("Unsolvable puzzle")
         exit()
-    prev_state, selected_states, maximum_states = solve.solve_puzzle(puzzle, puzzle_size, solved_puzzle, solved_puzzle_dict, heuristic, search)
+    try:
+        prev_state, selected_states, maximum_states = solve.solve_puzzle(puzzle, puzzle_size, solved_puzzle, solved_puzzle_dict, heuristic, search)
+    except:
+        error.error("solve_puzzle() failed")
     end_time = time.time()
     move_number = print_solution(solved_puzzle, prev_state, puzzle_size, mute)
     print("Total number of states ever selected in the opened set: %d" % selected_states)
