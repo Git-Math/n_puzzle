@@ -3,6 +3,7 @@ import os
 import getopt
 import copy
 import json
+import time
 
 import error
 import puzzle_generator
@@ -207,6 +208,7 @@ def print_solution(state, prev_state, puzzle_size):
     return 0
 
 if __name__ == '__main__':
+    start_time = time.time()
     puzzle, puzzle_size, heuristic, search, iterations, classic, mute = get_args()
     solved_puzzle = solved_puzzle(puzzle_size) if not classic else classic_solved_puzzle(puzzle_size)
     solved_puzzle_dict = solved_puzzle_dict(solved_puzzle, puzzle_size)
@@ -216,7 +218,9 @@ if __name__ == '__main__':
     #print_puzzle(puzzle, puzzle_size)
     #print_puzzle(solved_puzzle, puzzle_size)
     prev_state, selected_states, maximum_states = solve.solve_puzzle(puzzle, puzzle_size, solved_puzzle, solved_puzzle_dict, heuristic, search)
+    end_time = time.time()
     move_number = print_solution(solved_puzzle, prev_state, puzzle_size)
     print("Total number of states ever selected in the opened set: %d" % selected_states)
     print("Maximum number of states ever represented in memory at the same time: %d" % maximum_states)
     print("Number of moves required to transition from the initial state to the final state: %d" % move_number)
+    print("Time: %.2fs" % (end_time - start_time))

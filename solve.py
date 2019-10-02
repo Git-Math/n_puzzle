@@ -3,7 +3,6 @@ import math
 from queue import PriorityQueue
 from collections import defaultdict
 import json
-import copy
 
 import n_puzzle
 
@@ -61,26 +60,32 @@ def linear_conflict(puzzle, puzzle_size, x, y, solved_puzzle, solved_puzzle_dict
         return 2
     return 0
 
+def deepcopy(puzzle):
+    puzzle_copy = []
+    for row in puzzle:
+        puzzle_copy.append(list(row))
+    return puzzle_copy
+
 def expand(puzzle, puzzle_size):
     x, y = n_puzzle.find_empty_square(puzzle)
     states = []
     if x - 1 >= 0:
-        state = copy.deepcopy(puzzle)
+        state = deepcopy(puzzle)
         state[y][x] = state[y][x - 1]
         state[y][x - 1] = 0
         states.append(state)
     if x + 1 < puzzle_size:
-        state = copy.deepcopy(puzzle)
+        state = deepcopy(puzzle)
         state[y][x] = state[y][x + 1]
         state[y][x + 1] = 0
         states.append(state)
     if y - 1 >= 0:
-        state = copy.deepcopy(puzzle)
+        state = deepcopy(puzzle)
         state[y][x] = state[y - 1][x]
         state[y - 1][x] = 0
         states.append(state)
     if y + 1 < puzzle_size:
-        state = copy.deepcopy(puzzle)
+        state = deepcopy(puzzle)
         state[y][x] = state[y + 1][x]
         state[y + 1][x] = 0
         states.append(state)
