@@ -1,0 +1,7 @@
+# Randomly generated solvable puzzle shuffled with 10000 iterations
+5
+18 14 20  3 11
+ 8  2  9 24  4
+22 19  1 10 13
+ 6  7 12 15 16
+21 23  0 17  5
